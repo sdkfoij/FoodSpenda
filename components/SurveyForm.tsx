@@ -34,7 +34,6 @@ const defaults: Existing = {
 const factors = ["ราคา", "รสชาติ", "ความสะอาด", "ความสะดวก", "ปริมาณ", "โภชนาการ", "รีวิว/คำแนะนำ"];
 
 export default function SurveyForm({ initialData, userId }: { initialData?: Partial<Existing>; userId: string }) {
-  const supabase = createClient();
   const [form, setForm] = useState<Existing>({ ...defaults, ...initialData });
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState("");
@@ -58,6 +57,8 @@ export default function SurveyForm({ initialData, userId }: { initialData?: Part
     e.preventDefault();
     setSaving(true);
     setMessage("");
+
+    const supabase = createClient();
 
     const payload = {
       user_id: userId,
