@@ -24,11 +24,13 @@ export default function AuthPage() {
   const [message, setMessage] = useState("");
   const [messageType, setMessageType] = useState<"error" | "success">("error");
   const [loading, setLoading] = useState(false);
+  const [showResend, setShowResend] = useState(false);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setLoading(true);
     setMessage("");
+    setShowResend(false);
     
     try {
       const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
@@ -77,9 +79,46 @@ export default function AuthPage() {
       setMessage(
         "สมัครสมาชิกสำเร็จครับ/ค่ะ กรุณาเปิดอีเมลเพื่อกดยืนยันบัญชี แล้วระบบจะพากลับเข้าเว็บไซต์อัตโนมัติ"
       );
+      setShowResend(true);
     } catch (error) {
       setMessageType("error");
       setMessage(error instanceof Error ? error.message : "เกิดข้อผิดพลาด กรุณาลองใหม่อีกครั้ง");
+      setShowResend(mode === "signup" && email.trim().length > 0);
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  async function resendConfirmation() {
+    if (!email.trim()) return;
+
+    setLoading(true);
+    setMessage("");
+
+    try {
+      const supabase = createClient();
+      const emailRedirectTo =
+        typeof window !== "undefined"
+          ? `${window.location.origin}/auth/callback`
+          : undefined;
+
+      const { error } = await withTimeout(
+        supabase.auth.resend({
+          type: "signup",
+          email: email.trim(),
+          options: emailRedirectTo ? { emailRedirectTo } : undefined,
+        }),
+        REQUEST_TIMEOUT_MS
+      );
+
+      if (error) throw error;
+
+      setMessageType("success");
+      setMessage("ส่งอีเมลยืนยันใหม่แล้ว กรุณาตรวจสอบกล่องจดหมายและโฟลเดอร์สแปม");
+      setShowResend(false);
+    } catch (error) {
+      setMessageType("error");
+      setMessage(error instanceof Error ? error.message : "ส่งอีเมลยืนยันไม่สำเร็จ กรุณาลองใหม่อีกครั้ง");
     } finally {
       setLoading(false);
     }
@@ -133,6 +172,12 @@ export default function AuthPage() {
           <div className={messageType === "success" ? "success-box" : "alert"}>
             {message}
           </div>
+        )}
+
+        {showResend && mode === "signup" && (
+          <button type="button" className="link-button" disabled={loading} onClick={resendConfirmation}>
+            ส่งอีเมลยืนยันอีกครั้ง
+          </button>
         )}
 
         <button
