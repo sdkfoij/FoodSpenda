@@ -23,12 +23,12 @@ alter table public.survey_responses enable row level security;
 drop policy if exists "Users can view their own response" on public.survey_responses;
 create policy "Users can view their own response"
 on public.survey_responses for select to authenticated
-using (auth.uid() = user_id);
+using ((select auth.uid()) = user_id);
 
 drop policy if exists "Users can insert their own response" on public.survey_responses;
 create policy "Users can insert their own response"
 on public.survey_responses for insert to authenticated
-with check (auth.uid() = user_id);
+with check ((select auth.uid()) = user_id);
 
 drop policy if exists "Users can update their own response" on public.survey_responses;
 create policy "Users can update their own response"
