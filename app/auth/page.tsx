@@ -4,7 +4,6 @@ import { useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 
 export default function AuthPage() {
-  const supabase = createClient();
   const [mode, setMode] = useState<"login" | "signup">("login");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -15,6 +14,8 @@ export default function AuthPage() {
     e.preventDefault();
     setLoading(true);
     setMessage("");
+
+    const supabase = createClient();
 
     if (mode === "login") {
       const { error } = await supabase.auth.signInWithPassword({ email, password });
@@ -42,7 +43,7 @@ export default function AuthPage() {
           <button className="button primary full" disabled={loading}>{loading ? "กำลังดำเนินการ..." : mode === "login" ? "เข้าสู่ระบบ" : "สร้างบัญชี"}</button>
         </form>
         {message && <div className="alert">{message}</div>}
-        <button className="link-button" onClick={() => { setMode(mode === "login" ? "signup" : "login"); setMessage(""); }}>
+        <button type="button" className="link-button" onClick={() => { setMode(mode === "login" ? "signup" : "login"); setMessage(""); }}>
           {mode === "login" ? "ยังไม่มีบัญชี? สมัครสมาชิก" : "มีบัญชีแล้ว? เข้าสู่ระบบ"}
         </button>
       </section>
