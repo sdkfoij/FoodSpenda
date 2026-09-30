@@ -8,7 +8,9 @@ export const dynamic = "force-dynamic";
 
 export default async function SurveyPage() {
   const supabase = await createClient();
-  const { data: { claims } } = await supabase.auth.getClaims();
+
+  const { data: claimsData, error: claimsError } = await supabase.auth.getClaims();
+  const claims = claimsError ? null : claimsData?.claims ?? null;
 
   const userId = typeof claims?.sub === "string" ? claims.sub : null;
   if (!userId) redirect("/auth");
